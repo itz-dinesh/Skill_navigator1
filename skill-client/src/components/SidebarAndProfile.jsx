@@ -332,14 +332,12 @@ const SidebarAndProfile = () => {
             <div className="flex justify-end gap-4 mt-6">
               <button
                 type="button"
-                className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600"
-              >
+                className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600">
                 Update
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700"
-              >
+                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700">
                 Submit
               </button>
             </div>
