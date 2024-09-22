@@ -294,6 +294,7 @@ const SidebarAndProfile = () => {
                 <option value="Go">Go</option>
                 <option value="Swift">Swift</option>
                 <option value="PHP">PHP</option>
+                <option value="SQL">SQL</option>
               </select>
               <input
                 type="text"
