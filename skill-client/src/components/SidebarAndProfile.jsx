@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios'; // Make sure to install axios
+import { useNavigate } from 'react-router-dom';
 
 const SidebarAndProfile = () => {
   const [certifications, setCertifications] = useState([]);
@@ -12,11 +14,14 @@ const SidebarAndProfile = () => {
     email: '',
     linkedIn: '',
     gitHub: '',
-    languages: '',
   });
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [customLanguage, setCustomLanguage] = useState('');
   const [errors, setErrors] = useState({});
+  const [isAlertVisible, setIsAlertVisible] = useState(false); // For the alert
+  const [alertMessage, setAlertMessage] = useState(''); // Custom alert message
+
+  const navigate = useNavigate();
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -48,14 +53,6 @@ const SidebarAndProfile = () => {
     const { value } = e.target;
     if (value && !selectedLanguages.includes(value)) {
       setSelectedLanguages([...selectedLanguages, value]);
-      setFormData({ ...formData, languages: '' }); // Reset dropdown
-    }
-  };
-
-  const handleCustomLanguageAdd = () => {
-    if (customLanguage && !selectedLanguages.includes(customLanguage)) {
-      setSelectedLanguages([...selectedLanguages, customLanguage]);
-      setCustomLanguage('');
     }
   };
 
@@ -63,38 +60,61 @@ const SidebarAndProfile = () => {
     setSelectedLanguages(selectedLanguages.filter((lang) => lang !== language));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let validationErrors = {};
+    // Reset previous errors
+    const newErrors = {};
 
-    // Validate each field
-    for (const key in formData) {
-      if (formData[key] === '') {
-        validationErrors[key] = `Please fill the ${key} field.`;
-      }
+    // Check if formData fields are empty
+    const isEmptyField = Object.values(formData).some((value) => value === '');
+    if (isEmptyField) {
+      newErrors.form = 'Please fill in all the fields.';
     }
 
+    // Check for certifications and selected languages
     if (certifications.length === 0) {
-      validationErrors.certifications = 'Please upload at least one certification.';
+      newErrors.certifications = 'Please upload at least one certification.';
     }
 
     if (selectedLanguages.length === 0) {
-      validationErrors.languages = 'Please select at least one language.';
+      newErrors.languages = 'Please select at least one language.';
     }
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+    // If there are validation errors, set them and stop the submission
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    alert('Form submitted successfully!');
-    // Add further actions for form submission
+    try {
+      const response = await axios.post('http://localhost:5000/api/updateProfile', {
+        ...formData,
+        certifications,
+        languages: selectedLanguages.includes("Custom") ? [...selectedLanguages.filter(lang => lang !== "Custom"), customLanguage] : selectedLanguages,
+      });
+
+      setAlertMessage('Profile updated successfully!');  // Set success message
+      setIsAlertVisible(true);         // Show the alert
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setAlertMessage('Failed to submit form. Please try again.');
+      setIsAlertVisible(true);         // Show the alert in case of error
+    }
   };
 
   const handleLogout = () => {
     // Add your logout logic here
-    alert('Logged out successfully!');
+    setAlertMessage('Logged out successfully!');
+    setIsAlertVisible(true); // Show the alert
+  };
+
+  const closeModal = () => {
+    setIsAlertVisible(false);
+    if (alertMessage === 'Profile updated successfully!') {
+      setAlertMessage('');  // Clear the message after navigation
+      navigate('/home'); // Redirect only if the success message was shown
+    }
   };
 
   return (
@@ -133,13 +153,13 @@ const SidebarAndProfile = () => {
         
         {/* Links */}
         <div className="flex flex-col mt-10 mb-auto">
-          <a href="/home" target="_blank" rel="noopener noreferrer" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
+          <a href="/home" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
             Home
           </a>
-          <a href="/courses" target="_blank" rel="noopener noreferrer" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
+          <a href="/courses" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
             Courses
           </a>
-          <a href="/activity" target="_blank" rel="noopener noreferrer" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
+          <a href="/activity" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
             Activity
           </a>
         </div>
@@ -234,11 +254,11 @@ const SidebarAndProfile = () => {
                 {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
               </div>
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">Email ID</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
                 <input
                   type="email"
                   name="email"
-                  placeholder="Enter your E-mail ID"
+                  placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -247,102 +267,112 @@ const SidebarAndProfile = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">Certifications</label>
-              <div className="relative">
-                <button type="button" className="bg-blue-500 text-white px-4 py-2 rounded-md relative overflow-hidden">
-                  Upload Certifications
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleFileChange}
-                    className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                </button>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">LinkedIn Profile</label>
+                <input
+                  type="text"
+                  name="linkedIn"
+                  placeholder="LinkedIn URL"
+                  value={formData.linkedIn}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                {errors.linkedIn && <p className="text-red-500 text-sm">{errors.linkedIn}</p>}
               </div>
-              <ul className="mt-2">
-                {certifications.map((cert, index) => (
-                  <li key={index} className="flex items-center justify-between py-1">
-                    <span>{cert}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile(cert)}
-                      className="text-red-500"
-                    >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {errors.certifications && <p className="text-red-500 text-sm">{errors.certifications}</p>}
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">GitHub Profile</label>
+                <input
+                  type="text"
+                  name="gitHub"
+                  placeholder="GitHub URL"
+                  value={formData.gitHub}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                {errors.gitHub && <p className="text-red-500 text-sm">{errors.gitHub}</p>}
+              </div>
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">Languages</label>
-              <select
-                name="languages"
-                onChange={handleLanguageSelect}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                <option value="">Select Language</option>
-                <option value="JavaScript">JavaScript</option>
-                <option value="Python">Python</option>
-                <option value="Java">Java</option>
-                <option value="C#">C#</option>
-                <option value="C++">C++</option>
-                <option value="Ruby">Ruby</option>
-                <option value="Go">Go</option>
-                <option value="Swift">Swift</option>
-                <option value="PHP">PHP</option>
-                <option value="SQL">SQL</option>
-              </select>
+              <label className="block mb-2 text-sm font-medium text-gray-700">Upload Certifications</label>
               <input
-                type="text"
-                placeholder="Add a custom language"
-                value={customLanguage}
-                onChange={(e) => setCustomLanguage(e.target.value)}
-                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                type="file"
+                multiple
+                onChange={handleFileChange}
+                className="mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              <button
-                type="button"
-                onClick={handleCustomLanguageAdd}
-                className="bg-blue-500 text-white mt-2 px-4 py-2 rounded-md"
-              >
-                Add Language
-              </button>
-              {errors.languages && <p className="text-red-500 text-sm">{errors.languages}</p>}
-              {/* Display the list of selected languages */}
-              {selectedLanguages.length > 0 && (
-                <ul className="mt-2 text-sm text-gray-700">
-                  {selectedLanguages.map((language, index) => (
-                    <li key={index} className="flex items-center justify-between">
-                      <span>{language}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveLanguage(language)}
-                        className="text-red-500"
-                      >
-                        Remove
-                      </button>
+              {certifications.length > 0 && (
+                <ul className="list-disc pl-5">
+                  {certifications.map((cert) => (
+                    <li key={cert} className="flex justify-between items-center">
+                      {cert}
+                      <button type="button" onClick={() => handleRemoveFile(cert)} className="text-red-500 ml-2">Remove</button>
                     </li>
                   ))}
                 </ul>
               )}
+              {errors.certifications && <p className="text-red-500 text-sm">{errors.certifications}</p>}
             </div>
 
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                type="button"
-                className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600">
-                Update
-              </button>
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700">
-                Submit
-              </button>
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-700">Select Languages</label>
+              <select onChange={handleLanguageSelect} className="mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <option value="">Select Language</option>
+  <option value="JavaScript">JavaScript</option>
+  <option value="Python">Python</option>
+  <option value="Java">Java</option>
+  <option value="C++">C++</option>
+  <option value="C#">C#</option>
+  <option value="PHP">PHP</option>
+  <option value="Ruby">Ruby</option>
+  <option value="Swift">Swift</option>
+  <option value="Kotlin">Kotlin</option>
+  <option value="Go">Go</option>
+  <option value="Rust">Rust</option>
+  <option value="TypeScript">TypeScript</option>
+  <option value="Custom">Custom</option>
+              </select>
+              {selectedLanguages.includes("Custom") && (
+                <input
+                  type="text"
+                  value={customLanguage}
+                  onChange={(e) => setCustomLanguage(e.target.value)}
+                  placeholder="Enter your custom language"
+                  className="mb-2 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              )}
+              <ul className="list-disc pl-5">
+                {selectedLanguages.map((lang) => (
+                  <li key={lang} className="flex justify-between items-center">
+                    {lang}
+                    <button type="button" onClick={() => handleRemoveLanguage(lang)} className="text-red-500 ml-2">Remove</button>
+                  </li>
+                ))}
+              </ul>
+              {errors.languages && <p className="text-red-500 text-sm">{errors.languages}</p>}
             </div>
+
+            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md shadow hover:bg-blue-700">
+              Submit
+            </button>
+
+            {errors.form && <p className="text-red-500 text-sm">{errors.form}</p>}
           </form>
+
+          {isAlertVisible && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full">
+                <h2 className="text-lg font-medium text-gray-800">{alertMessage}</h2>
+                <button
+                  onClick={closeModal}
+                  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

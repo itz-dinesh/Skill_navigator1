@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from 'axios'; 
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -10,28 +11,42 @@ const SignUp = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
- // Import Axios
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission
 
+    try {
+      const response = await axios.post('http://localhost:5000/api/signup', {
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+      console.log(response.data); // Handle success response
+      navigate("/login"); // Redirect to login or another page after successful signup
+    } catch (err) {
+      console.error(err);
+      setError("An error occurred during signup. Please try again."); // Set error message
+    }
+  };
 
-
- const handleSubmit = async (e) => {
-  e.preventDefault(); // Prevent default form submission
-
-  try {
-    const response = await axios.post('http://localhost:5000/api/signup', {
-      firstName,
-      lastName,
-      email,
-      password,
-    });
-    console.log(response.data); // Handle success response
-    navigate("/login"); // Redirect to login or another page after successful signup
-  } catch (err) {
-    console.error(err);
-    setError("An error occurred during signup. Please try again."); // Set error message
-    }
-  };
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/google-login', {
+        token: credentialResponse.credential,
+      });
+      console.log(response.data); // Handle the response from your backend
+      navigate("/sidebarandprofile"); // Redirect user to the SidebarAndProfile page
+    } catch (err) {
+      console.error(err);
+      setError("Google authentication failed. Please try again.");
+    }
+  };
+  
+  const handleGoogleError = () => {
+    setError("Google authentication failed. Please try again.");
+  };
 
   const inputVariant = {
     hover: {
@@ -68,181 +83,189 @@ const SignUp = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="flex items-center justify-center min-h-screen bg-white pt-9"
-    >
-      <div className="absolute top-4 left-4">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Hexaware_new_logo.svg/768px-Hexaware_new_logo.svg.png?20201230064751"
-          alt="Logo"
-          className="w-24 h-auto"
-        />
-      </div>
-
+    <GoogleOAuthProvider clientId="1049144010345-a0aiaccvdrrci7na7h0nnvlvsjmvepfe.apps.googleusercontent.com">
       <motion.div
-        className="flex flex-col md:flex-row bg-white w-fit h-fit mt-1"
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 1.5, ease: "easeInOut" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-center min-h-screen bg-white pt-9"
       >
+        <div className="absolute top-4 left-4">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Hexaware_new_logo.svg/768px-Hexaware_new_logo.svg.png?20201230064751"
+            alt="Logo"
+            className="w-24 h-auto"
+          />
+        </div>
+
         <motion.div
-          className="hidden md:flex md:w-1/2 bg-white"
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col md:flex-row bg-white w-fit h-fit mt-1"
+          initial="hidden"
+          animate="visible"
           transition={{ duration: 1.5, ease: "easeInOut" }}
         >
-          <img
-            src="src/assets/login_img.png"
-            alt="Illustration"
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
-
-        <motion.div
-          className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center h-full"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-        >
-          <h2 className="text-4xl font-semibold text-gray-800">Create an account</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Log in
-            </Link>
-          </p>
-          <form className="mt-6 flex flex-col" onSubmit={handleSubmit}>
-            <div className="flex flex-col md:flex-row gap-4">
-              <motion.div className="relative w-full md:w-1/2">
-                <motion.input
-                  type="text"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
-                  variants={inputVariant}
-                  whileHover="hover"
-                  whileFocus="focus"
-                />
-                {firstName.length === 0 && (
-                  <motion.label
-                    htmlFor="firstName"
-                    className="absolute left-4 top-2 text-gray-400 pointer-events-none"
-                    variants={placeholderVariant}
-                  >
-                    First Name
-                  </motion.label>
-                )}
-              </motion.div>
-
-              <motion.div className="relative w-full md:w-1/2">
-                <motion.input
-                  type="text"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
-                  variants={inputVariant}
-                  whileHover="hover"
-                  whileFocus="focus"
-                />
-                {lastName.length === 0 && (
-                  <motion.label
-                    htmlFor="lastName"
-                    className="absolute left-4 top-2 text-gray-400 pointer-events-none"
-                    variants={placeholderVariant}
-                  >
-                    Last Name
-                  </motion.label>
-                )}
-              </motion.div>
-            </div>
-            <motion.div className="relative mt-4">
-              <motion.input
-                type="email"
-                placeholder="E-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
-                variants={inputVariant}
-                whileHover="hover"
-                whileFocus="focus"
-              />
-              {email.length === 0 && (
-                <motion.label
-                  htmlFor="email"
-                  className="absolute left-4 top-2 text-gray-400 pointer-events-none"
-                  variants={placeholderVariant}
-                >
-                  E-mail
-                </motion.label>
-              )}
-            </motion.div>
-            <motion.div className="relative mt-4">
-              <motion.input
-                type={password ? "password" : "text"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
-                variants={inputVariant}
-                whileHover="hover"
-                whileFocus="focus"
-              />
-              {password.length === 0 && (
-                <motion.label
-                  htmlFor="password"
-                  className="absolute left-4 top-2 text-gray-400 pointer-events-none"
-                  variants={placeholderVariant}
-                >
-                  Password
-                </motion.label>
-              )}
-            </motion.div>
-            <div className="mt-4 flex items-center">
-              <input
-                type="checkbox"
-                id="terms"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                Terms & Conditions Apply
-              </label>
-            </div>
-            <motion.button
-              type="submit"
-              className="w-full mt-6 bg-blue-500 text-white py-2 rounded-lg"
-              variants={buttonVariant}
-              whileHover="hover"
-              whileTap="tap"
-            >
-              Create Account
-            </motion.button>
-          </form>
-          <div className="flex items-center justify-center mt-6">
-            <span className="border-t border-gray-300 w-1/4"></span>
-            <span className="text-gray-500 mx-4">or</span>
-            <span className="border-t border-gray-300 w-1/4"></span>
-          </div>
-          <motion.button
-            className="w-full mt-6 bg-gray-100 text-gray-800 py-2 rounded-lg border border-gray-300 flex items-center justify-center"
-            variants={buttonVariant}
-            whileHover="hover"
-            whileTap="tap"
+          <motion.div
+            className="hidden md:flex md:w-1/2 bg-white"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
           >
             <img
-              src="src/assets/google.png"
-              alt="Google Icon"
-              className="w-5 h-5 mr-2"
+              src="src/assets/login_img.png"
+              alt="Illustration"
+              className="w-full h-full object-cover"
             />
-            Sign up with Google
-          </motion.button>
+          </motion.div>
+
+          <motion.div
+            className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center h-full"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          >
+            <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">Sign Up</h1>
+
+            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+            <form onSubmit={handleSubmit}>
+              <motion.div
+                className="mb-4"
+                variants={inputVariant}
+                whileHover="hover"
+                whileFocus="focus"
+              >
+                <label
+                  htmlFor="firstName"
+                  className="block text-gray-700 font-bold mb-2"
+                >
+                  First Name
+                </label>
+                <motion.input
+                  type="text"
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  variants={placeholderVariant}
+                  initial="initial"
+                  whileHover="hover"
+                  whileFocus="focus"
+                />
+              </motion.div>
+
+              <motion.div
+                className="mb-4"
+                variants={inputVariant}
+                whileHover="hover"
+                whileFocus="focus"
+              >
+                <label
+                  htmlFor="lastName"
+                  className="block text-gray-700 font-bold mb-2"
+                >
+                  Last Name
+                </label>
+                <motion.input
+                  type="text"
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  variants={placeholderVariant}
+                  initial="initial"
+                  whileHover="hover"
+                  whileFocus="focus"
+                />
+              </motion.div>
+
+              <motion.div
+                className="mb-4"
+                variants={inputVariant}
+                whileHover="hover"
+                whileFocus="focus"
+              >
+                <label
+                  htmlFor="email"
+                  className="block text-gray-700 font-bold mb-2"
+                >
+                  Email
+                </label>
+                <motion.input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  variants={placeholderVariant}
+                  initial="initial"
+                  whileHover="hover"
+                  whileFocus="focus"
+                />
+              </motion.div>
+
+              <motion.div
+                className="mb-6"
+                variants={inputVariant}
+                whileHover="hover"
+                whileFocus="focus"
+              >
+                <label
+                  htmlFor="password"
+                  className="block text-gray-700 font-bold mb-2"
+                >
+                  Password
+                </label>
+                <motion.input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  variants={placeholderVariant}
+                  initial="initial"
+                  whileHover="hover"
+                  whileFocus="focus"
+                />
+              </motion.div>
+
+              <motion.button
+                type="submit"
+                className="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-blue-600"
+                variants={buttonVariant}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                Sign Up
+              </motion.button>
+            </form>
+
+            <motion.div
+              className="mt-6 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1.5 }}
+            >
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+              />
+            </motion.div>
+
+            <motion.div
+              className="text-center mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1.5 }}
+            >
+              Already have an account?{" "}
+              <Link to="/login" className="text-blue-500 hover:underline">
+                Log In
+              </Link>
+            </motion.div>
+          </motion.div>
         </motion.div>
       </motion.div>
-    </motion.div>
+    </GoogleOAuthProvider>
   );
 };
 
