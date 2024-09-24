@@ -107,6 +107,7 @@ const SidebarAndProfile = () => {
     // Add your logout logic here
     setAlertMessage('Logged out successfully!');
     setIsAlertVisible(true); // Show the alert
+    navigate('/');
   };
 
   const closeModal = () => {
@@ -156,10 +157,10 @@ const SidebarAndProfile = () => {
           <a href="/home" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
             Home
           </a>
-          <a href="/courses" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
+          <a href="/home" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
             Courses
           </a>
-          <a href="/activity" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
+          <a href="/home" className="px-6 py-4 hover:bg-blue-100 w-full text-left block text-blue-600">
             Activity
           </a>
         </div>

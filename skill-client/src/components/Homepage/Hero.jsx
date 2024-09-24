@@ -12,8 +12,8 @@ const Hero = ({ onGetStartedClick }) => {
           Provides you with the latest learning system and up-to-date courses.
         </p>
         <button
-          className="ml-7 mt-6 px-8 py-3 bg-blue-500 text-white rounded-full"
-          onClick={onGetStartedClick} // Use the passed function
+          className="ml-7 mt-6 px-8 py-3 bg-blue-500 text-white rounded-full transition duration-300 ease-in-out transform hover:bg-blue-600 hover:scale-105"
+          onClick={onGetStartedClick}
         >
           Get Started
         </button>

@@ -24,7 +24,7 @@ const SignUp = () => {
         password,
       });
       console.log(response.data); // Handle success response
-      navigate("/login"); // Redirect to login or another page after successful signup
+      navigate("/login"); // Redirect to login after successful signup
     } catch (err) {
       console.error(err);
       setError("An error occurred during signup. Please try again."); // Set error message
@@ -123,144 +123,129 @@ const SignUp = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.5, ease: "easeInOut" }}
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">Sign Up</h1>
-
+            <h2 className="text-4xl font-semibold text-gray-800">Create an account</h2>
             {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+            <p className="mt-2 text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link to="/login" className="text-blue-600 hover:underline">
+                Log in
+              </Link>
+            </p>
+            <form className="mt-6 flex flex-col" onSubmit={handleSubmit}>
+              <div className="flex flex-col md:flex-row gap-4">
+                <motion.div className="relative w-full md:w-1/2">
+                  <motion.input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
+                    variants={inputVariant}
+                    whileHover="hover"
+                    whileFocus="focus"
+                  />
+                  {firstName.length === 0 && (
+                    <motion.label
+                      htmlFor="firstName"
+                      className="absolute left-4 top-2 text-gray-400 pointer-events-none"
+                      variants={placeholderVariant}
+                    >
+                      First Name
+                    </motion.label>
+                  )}
+                </motion.div>
 
-            <form onSubmit={handleSubmit}>
-              <motion.div
-                className="mb-4"
-                variants={inputVariant}
-                whileHover="hover"
-                whileFocus="focus"
-              >
-                <label
-                  htmlFor="firstName"
-                  className="block text-gray-700 font-bold mb-2"
-                >
-                  First Name
-                </label>
-                <motion.input
-                  type="text"
-                  id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  variants={placeholderVariant}
-                  initial="initial"
-                  whileHover="hover"
-                  whileFocus="focus"
-                />
-              </motion.div>
+                <motion.div className="relative w-full md:w-1/2">
+                  <motion.input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
+                    variants={inputVariant}
+                    whileHover="hover"
+                    whileFocus="focus"
+                  />
+                  {lastName.length === 0 && (
+                    <motion.label
+                      htmlFor="lastName"
+                      className="absolute left-4 top-2 text-gray-400 pointer-events-none"
+                      variants={placeholderVariant}
+                    >
+                      Last Name
+                    </motion.label>
+                  )}
+                </motion.div>
+              </div>
 
-              <motion.div
-                className="mb-4"
-                variants={inputVariant}
-                whileHover="hover"
-                whileFocus="focus"
-              >
-                <label
-                  htmlFor="lastName"
-                  className="block text-gray-700 font-bold mb-2"
-                >
-                  Last Name
-                </label>
-                <motion.input
-                  type="text"
-                  id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  variants={placeholderVariant}
-                  initial="initial"
-                  whileHover="hover"
-                  whileFocus="focus"
-                />
-              </motion.div>
-
-              <motion.div
-                className="mb-4"
-                variants={inputVariant}
-                whileHover="hover"
-                whileFocus="focus"
-              >
-                <label
-                  htmlFor="email"
-                  className="block text-gray-700 font-bold mb-2"
-                >
-                  Email
-                </label>
+              <motion.div className="relative mt-4">
                 <motion.input
                   type="email"
-                  id="email"
+                  placeholder="E-mail"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  variants={placeholderVariant}
-                  initial="initial"
+                  className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
+                  variants={inputVariant}
                   whileHover="hover"
                   whileFocus="focus"
                 />
+                {email.length === 0 && (
+                  <motion.label
+                    htmlFor="email"
+                    className="absolute left-4 top-2 text-gray-400 pointer-events-none"
+                    variants={placeholderVariant}
+                  >
+                    E-mail
+                  </motion.label>
+                )}
               </motion.div>
 
-              <motion.div
-                className="mb-6"
-                variants={inputVariant}
-                whileHover="hover"
-                whileFocus="focus"
-              >
-                <label
-                  htmlFor="password"
-                  className="block text-gray-700 font-bold mb-2"
-                >
-                  Password
-                </label>
+              <motion.div className="relative mt-4">
                 <motion.input
-                  type="password"
-                  id="password"
+                  type={password ? "password" : "text"}
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  variants={placeholderVariant}
-                  initial="initial"
+                  className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
+                  variants={inputVariant}
                   whileHover="hover"
                   whileFocus="focus"
                 />
+                {password.length === 0 && (
+                  <motion.label
+                    htmlFor="password"
+                    className="absolute left-4 top-2 text-gray-400 pointer-events-none"
+                    variants={placeholderVariant}
+                  >
+                    Password
+                  </motion.label>
+                )}
               </motion.div>
 
               <motion.button
                 type="submit"
-                className="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-blue-600"
+                className="w-full mt-6 bg-blue-500 text-white py-2 rounded-lg"
                 variants={buttonVariant}
                 whileHover="hover"
                 whileTap="tap"
               >
-                Sign Up
+                Create Account
               </motion.button>
             </form>
 
-            <motion.div
-              className="mt-6 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 1.5 }}
-            >
+            <div className="flex items-center justify-center mt-6">
+              <span className="border-t border-gray-300 w-1/4"></span>
+              <span className="text-gray-500 mx-4">or</span>
+              <span className="border-t border-gray-300 w-1/4"></span>
+            </div>
+
+            <motion.div className="mt-4">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
+                logo_alignment="left"
+                style={{ width: '100%' }}
               />
-            </motion.div>
-
-            <motion.div
-              className="text-center mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 1.5 }}
-            >
-              Already have an account?{" "}
-              <Link to="/login" className="text-blue-500 hover:underline">
-                Log In
-              </Link>
             </motion.div>
           </motion.div>
         </motion.div>

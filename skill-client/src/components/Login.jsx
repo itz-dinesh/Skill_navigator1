@@ -14,7 +14,6 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      // Make a POST request with email and password in the request body
       const response = await axios.post("http://localhost:5000/api/login", {
         email,
         password
@@ -134,6 +133,7 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
                 variants={inputVariant}
+                autoComplete="off" // Prevent autofill for email
               />
               {email.length === 0 && (
                 <motion.label
@@ -159,6 +159,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg bg-white placeholder-transparent text-black focus:outline-none"
                 variants={inputVariant}
+                autoComplete="new-password" // Prevent autofill for password
               />
               {password.length === 0 && (
                 <motion.label
@@ -191,24 +192,6 @@ const Login = () => {
               Login
             </motion.button>
           </form>
-          <div className="flex items-center justify-center mt-6">
-            <span className="border-t border-gray-300 w-1/4"></span>
-            <span className="text-gray-500 mx-4">or</span>
-            <span className="border-t border-gray-300 w-1/4"></span>
-          </div>
-          <motion.button
-            className="w-full mt-6 bg-gray-100 text-gray-800 py-2 rounded-lg border border-gray-300 flex items-center justify-center"
-            variants={buttonVariant}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <img
-              src="src/assets/google.png"
-              alt="Google Icon"
-              className="w-5 h-5 mr-2"
-            />
-            Continue with Google
-          </motion.button>
         </motion.div>
       </motion.div>
     </motion.div>
