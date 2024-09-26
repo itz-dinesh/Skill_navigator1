@@ -16,8 +16,10 @@ import LandingPage from './components/Landingpage';
 import ModulePage from './components/Modules/Modulepage';
 import Dataengmodulepage from './components/Modules/Dataengmodulepage';
 import Javamodulepage from './components/Modules/Javamodulepage';
+import Certificate from './components/Certificate';
 
 function App() {
+  
   return (
     <Router>
       <Routes>
@@ -40,6 +42,7 @@ function App() {
         <Route path="/javamodulepage" element={<Javamodulepage />} /> 
         <Route path="/Navbar" element={<Navbar />} />
         <Route path="/Footer" element={<Footer />} />
+        <Route path="/Certificate" element={<Certificate />} />
       </Routes>
     </Router>
   );
