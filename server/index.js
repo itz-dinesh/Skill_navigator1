@@ -169,6 +169,38 @@ app.post('/api/login', (req, res) => {
   });
 });
 
+// Fetch watched videos for a specific user
+app.get('/api/watched-videos', (req, res) => {
+  const userId = req.query.userId; // Assuming userId is sent in query params
+
+  const query = 'SELECT video_title FROM video_progress WHERE user_id = ? AND is_completed = true';
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      return res.status(500).send('Error fetching watched videos');
+    }
+    const watchedVideos = results.map(row => row.video_title);
+    res.json(watchedVideos);
+  });
+});
+
+// Mark video as watched
+app.post('/api/mark-watched', (req, res) => {
+  const { userId, videoTitle } = req.body;
+
+  const query = `
+    INSERT INTO video_progress (user_id, video_title, is_completed)
+    VALUES (?, ?, true)
+    ON DUPLICATE KEY UPDATE is_completed = true;
+  `;
+
+  db.query(query, [userId, videoTitle], (err) => {
+    if (err) {
+      return res.status(500).send('Error marking video as watched');
+    }
+    res.sendStatus(200);
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
